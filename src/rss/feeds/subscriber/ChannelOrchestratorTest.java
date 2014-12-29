@@ -8,10 +8,9 @@ import com.amazonaws.services.sqs.model.GetQueueUrlRequest;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageResult;
-import com.google.gson.Gson;
 
 import static com.rss.common.AWSDetails.SQS;
-import static com.rss.common.AWSDetails.SQS_PUBLISHER_QUEUE;
+import static com.rss.common.AWSDetails.SQS_GETFEEDS_QUEUE;
 
 class FetchFeedsRunnable implements Runnable {
 	IChannelOrchestrator mChannelOrchestrator;
@@ -22,7 +21,7 @@ class FetchFeedsRunnable implements Runnable {
 
 	@Override
 	public void run() {
-		mChannelOrchestrator.fetchFeeds();		
+		mChannelOrchestrator.fetchFeeds("3fcf3f32-1d5e-433c-a1fd-699dc439c74c");		
 	}
 }
 
@@ -36,12 +35,12 @@ class PollQueueRunnable implements Runnable {
 	@Override
 	public void run() {
         System.out.println("Listening for work");
-        String queueUrl = SQS.getQueueUrl(new GetQueueUrlRequest(SQS_PUBLISHER_QUEUE)).getQueueUrl();
+        String publisherUrl = SQS.getQueueUrl(new GetQueueUrlRequest(SQS_GETFEEDS_QUEUE)).getQueueUrl();
 
         while (true) {
             try {
                 ReceiveMessageResult result = SQS.receiveMessage(
-                        new ReceiveMessageRequest(queueUrl).withMaxNumberOfMessages(1));
+                        new ReceiveMessageRequest(publisherUrl).withMaxNumberOfMessages(1));
                 for (Message msg : result.getMessages()) {
                     System.out.println("Received message" + msg.getBody());
                     QueueMessage message = mChannelOrchestrator.getQueueMessages().get(msg.getBody());
@@ -50,7 +49,7 @@ class PollQueueRunnable implements Runnable {
                     	System.out.println("Signalling right now :");
                     	message.condition.signal();
                     }
-                    SQS.deleteMessage(new DeleteMessageRequest(queueUrl, msg.getReceiptHandle()));
+                    SQS.deleteMessage(new DeleteMessageRequest(publisherUrl, msg.getReceiptHandle()));
                 }
                 Thread.sleep(1000);
             } catch (Exception e) {
@@ -65,7 +64,7 @@ public class ChannelOrchestratorTest {
 	public static void main(String args[]) {
 		IChannelOrchestrator channelOrchestrator = new ChannelOrchestrator();
 		
-		String publisherQueueUrl = SQS.createQueue(new CreateQueueRequest(SQS_PUBLISHER_QUEUE)).getQueueUrl();
+		String publisherQueueUrl = SQS.createQueue(new CreateQueueRequest(SQS_GETFEEDS_QUEUE)).getQueueUrl();
         System.out.println("Using Amazon SQS Queue: " + publisherQueueUrl);       
                 
 		

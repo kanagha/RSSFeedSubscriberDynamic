@@ -1,6 +1,9 @@
 package rss.feeds.subscriber;
 
-public interface ISubscriberOrchestrator {
-	public void addSubscriber(String username, String emailAddress);
+import java.util.List;
 
+public interface ISubscriberOrchestrator {
+	public String addSubscriber(String username, String emailAddress);
+	public SubscriberObjectMapper getSubscriber(String subscriberId);
+	public List<SubscriberObjectMapper> getSubscribers();
 }

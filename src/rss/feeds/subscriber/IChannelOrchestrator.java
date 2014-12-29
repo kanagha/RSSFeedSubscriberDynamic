@@ -9,9 +9,15 @@ import com.rss.common.Article;
 
 public interface IChannelOrchestrator {
 	
-	public List<Article> fetchFeeds();
+	public List<Article> fetchFeeds(String channelId);
 
-	public void addChannel(Channel channel);
+	public String addChannel(ChannelObjectMapper channel);
+	
+	public void addURL(String channelId, String url);
+
+	public ChannelObjectMapper getChannel(String channelId);
 
 	public Map<String, QueueMessage> getQueueMessages();
+
+	public List<ChannelObjectMapper> getChannels(String subscriberid);
 }

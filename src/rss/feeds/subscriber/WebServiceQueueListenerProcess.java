@@ -1,10 +1,7 @@
 package rss.feeds.subscriber;
 
-import static com.amazonaws.memes.AWSResources.SQS;
 import static com.rss.common.AWSDetails.SQS;
-import static com.rss.common.AWSDetails.SQS_PUBLISHER_QUEUE;
-import static com.rss.common.AWSDetails.SQS_QUEUE_NAME;
-import static com.rss.common.AWSDetails.SQS_WEBSERVICE_REQUEST_QUEUE;
+import static com.rss.common.AWSDetails.*;
 
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
@@ -23,13 +20,12 @@ private final ScheduledExecutorService executorService = new ScheduledThreadPool
 	
 	public void run() {
 		
-		String webServiceQueueUrl = SQS.getQueueUrl(new GetQueueUrlRequest(SQS_WEBSERVICE_REQUEST_QUEUE)).getQueueUrl();
+		String webServiceQueueUrl = SQS.getQueueUrl(new GetQueueUrlRequest(SQS_GETFEEDS_QUEUE)).getQueueUrl();
 		while (true) {
             try {
                 ReceiveMessageResult result = SQS.receiveMessage(
                         new ReceiveMessageRequest(webServiceQueueUrl).withMaxNumberOfMessages(1));
                 for (Message msg : result.getMessages()) {
-                	
                     
                 	// Now do the processing here
                 	// put it in the other job queue
