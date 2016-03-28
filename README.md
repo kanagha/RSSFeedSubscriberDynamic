@@ -9,5 +9,13 @@ This is the subscriber(client) part of RSS FeedAggregator:
 4) Once channels are defined, a user can create a websocket endpoint one for each of the channelId.
 5) The application starts scheduling jobs inorder to fetch latest feeds for the urls associated with the channelId
     at a preconfigured interval.
+    
+    
+    
+    
+Calling webservice endpoints:
+1) Create user
+2) Create channels for each user
+3) Subscribe to websocketendpoint for a given channel
 
 
