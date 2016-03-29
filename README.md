@@ -19,6 +19,7 @@ This is the subscriber(client) part of RSS FeedAggregator:
     
     
 Calling webservice endpoints:
+
 1) Create user /rssfeeds/subscriber
 
 2) Create channels for each user /rssfeeds/channel
@@ -26,10 +27,14 @@ Calling webservice endpoints:
 3) Subscribe to websocketendpoint for a given channel
 
 Work In Progress:
+
 1) Sending notifications to the client websocket endpoints once latest feeds are retrieved.
 
 TODO:
+
 1) Enabling user to paginate through the feeds by fetching subsequent ranges.
+
 2) Using caching to optimize fetches.
+
 3) Configure separate job interval schedule for each of the feed url by retrieving the max time (from GET headers) before another GET can be sent again. 
 
