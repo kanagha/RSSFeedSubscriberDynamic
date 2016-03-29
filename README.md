@@ -19,6 +19,7 @@ This is the subscriber(client) part of RSS FeedAggregator:
     
     
 Calling webservice endpoints:
+=============================
 
 1) Create user /rssfeeds/subscriber
 
@@ -37,4 +38,12 @@ TODO:
 2) Using caching to optimize fetches.
 
 3) Configure separate job interval schedule for each of the feed url by retrieving the max time (from GET headers) before another GET can be sent again. 
+
+Languages/Technologies Used:
+============================
+1) Java
+
+2) SpringBoot/Amazon Simple Queue Service (SQS)/DynamoDB
+
+3) Web sockets
 
