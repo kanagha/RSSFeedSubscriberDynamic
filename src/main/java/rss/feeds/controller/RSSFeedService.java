@@ -1,4 +1,4 @@
-package rss.feeds.subscriber;
+package rss.feeds.controller;
 
 import java.util.List;
 
@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,10 +15,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rss.common.Article;
-import com.rss.common.DBDataProvider;
 
-import rss.feeds.quartz.JobSchedulerBean;
 import rss.feeds.stomp.SubscriptionMessage;
+import rss.feeds.subscriber.Channel;
+import rss.feeds.subscriber.IChannelOrchestrator;
+import rss.feeds.subscriber.ISubscriberOrchestrator;
+import rss.feeds.subscriber.IWebsocketEndPointConfigOrchestrator;
+import rss.feeds.subscriber.Subscriber;
 import rss.feeds.subscriber.dataprovider.ChannelObjectMapper;
 import rss.feeds.subscriber.dataprovider.SubscriberObjectMapper;
 
@@ -32,9 +34,8 @@ public class RSSFeedService {
     IChannelOrchestrator mChannelOrchestrator;
 	@Autowired
     ISubscriberOrchestrator mSubscriberOrchestrator;
-
-    @Autowired
-    private JobSchedulerBean jobScheduler;
+	@Autowired
+	IWebsocketEndPointConfigOrchestrator mWebsocketEndPointConfigOrchestrator;
 
     @RequestMapping(value="/createSubscriber/{username}/{emailAddress}", 
     		method = RequestMethod.POST, 
@@ -48,30 +49,30 @@ public class RSSFeedService {
     @RequestMapping(value="/subscriber/{subscriberid}", 
     		method = RequestMethod.GET,
     		produces = "application/json")
-    public ResponseEntity<SubscriberObjectMapper> getSubscriber(@PathVariable("subscriberid") String subscriberid) {
-    	SubscriberObjectMapper mapper = mSubscriberOrchestrator.getSubscriber(subscriberid);
-    	return new ResponseEntity<SubscriberObjectMapper>(mapper, HttpStatus.OK);
+    public ResponseEntity<Subscriber> getSubscriber(@PathVariable("subscriberid") String subscriberid) {
+    	Subscriber subscriber = mSubscriberOrchestrator.getSubscriber(subscriberid);
+    	return new ResponseEntity<Subscriber>(subscriber, HttpStatus.OK);
     }
 
     @RequestMapping(value="/subscriber", 
     		method = RequestMethod.GET,
     		produces = "application/json")
-    public ResponseEntity<List<SubscriberObjectMapper>> getAllSubscribers() {
-    	List<SubscriberObjectMapper> mapperList = mSubscriberOrchestrator.getSubscribers();
-    	return new ResponseEntity<List<SubscriberObjectMapper>>(mapperList, HttpStatus.OK);
+    public ResponseEntity<List<Subscriber>> getAllSubscribers() {
+    	List<Subscriber> mapperList = mSubscriberOrchestrator.getSubscribers();
+    	return new ResponseEntity<List<Subscriber>>(mapperList, HttpStatus.OK);
     }
 
     @RequestMapping(value="/channels/subscriber/{subscriberid}", 
     		method = RequestMethod.GET,
     		produces = "application/json")
-    public List<ChannelObjectMapper> getChannels(@PathVariable("subscriberid") String subscriberid) {      
+    public List<Channel> getChannels(@PathVariable("subscriberid") String subscriberid) {      
     	return mChannelOrchestrator.getChannels(subscriberid);
     }
 
     @RequestMapping(value="/channels/{channelid}", 
     		method = RequestMethod.GET,
     		produces = "application/json")
-    public ChannelObjectMapper getChannel(@PathVariable("channelid") String channelid) {
+    public Channel getChannel(@PathVariable("channelid") String channelid) {
     	return mChannelOrchestrator.getChannel(channelid);
     }
 
@@ -94,14 +95,12 @@ public class RSSFeedService {
      * This will subscribe the user to the latest feeds for the given channelId
      * And a job scheduler will be kicked off
      * @param message
-     * @throws Exception
      */
     @MessageMapping("/getfeeds")
     // message will contain the channelId
     public void subscribeToFeeds(SubscriptionMessage message) throws Exception {
 		String stompEndPoint = "/topic/getfeeds/" + message.getChannelId();
-		
-		DBDataProvider.addWebsocketEndPoint(stompEndPoint, message.getChannelId());
-		jobScheduler.scheduleJob(message.getChannelId());
+
+		mWebsocketEndPointConfigOrchestrator.addEndpoint(message.getChannelId(), stompEndPoint);
     }
 }

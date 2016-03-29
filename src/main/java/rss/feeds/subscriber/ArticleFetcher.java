@@ -11,14 +11,15 @@ import org.springframework.stereotype.Component;
 
 import com.rss.common.Article;
 import com.rss.common.DBDataProvider;
-import com.rss.common.cache.FeedData;
 import com.rss.common.dataprovider.ArticleObjectMapper;
 
 @Component
 @Scope("prototype")
-public class CacheDatabaseReader {
+public class ArticleFetcher {
 	
 	// TODO: Configure Redis completely
+	// Since reading from redis is not completely configured,
+	// it reads from database currently
 
 	public Map<String, List<Article>> fetchArticles(Set<String> urlSet) {
 		// If cache contains articles, read from the cache.

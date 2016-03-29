@@ -8,6 +8,6 @@
     xmlns:sample="http://www.example.com">
 
     <bean class="org.springframework.context.annotation.CommonAnnotationBeanPostProcessor" />
-    <bean name="jobSchedulerBean" class="rss.feeds.quartz.JobSchedulerBean" 
-    init-method="initIt" destroy-method="cleanUp" />
+    <bean name="jobSchedulerBean" class="rss.feeds.quartz.JobSchedulerBean" />
+    <!--  init-method="initIt" destroy-method="cleanUp"--> 
 </beans>

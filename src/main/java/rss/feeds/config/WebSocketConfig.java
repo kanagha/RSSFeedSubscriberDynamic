@@ -1,4 +1,4 @@
-package rss.feeds.subscriber;
+package rss.feeds.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;

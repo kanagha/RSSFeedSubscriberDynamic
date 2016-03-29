@@ -28,17 +28,19 @@ import rss.feeds.subscriber.dataprovider.ChannelObjectMapper;
 @Scope("prototype")
 public class ChannelOrchestrator implements IChannelOrchestrator {
 
-	CacheDatabaseReader mCacheDatabaseReader = null;
+	ArticleFetcher mCacheDatabaseReader = null;
 	public ChannelOrchestrator() {
-		mCacheDatabaseReader = new CacheDatabaseReader();
+		mCacheDatabaseReader = new ArticleFetcher();
 	}
 
 	/**
 	 * Retrieves the existing feeds from the db
 	 * For those urls not present, it sends a message to SQS queue
 	 * and when the message is processed,
-	 * the user gets notified with the latest feeds
+	 * the user gets notified with the latest feeds, if a websocket
+	 * endpoint is configured for the channel
 	 */
+	@Override
 	public List<Article> fetchFeeds(String channelId) {
 		
 		ChannelObjectMapper channel = DYNAMODB_MAPPER.load(ChannelObjectMapper.class, channelId);
@@ -86,8 +88,9 @@ public class ChannelOrchestrator implements IChannelOrchestrator {
 	}
 
 	@Override
-	public ChannelObjectMapper getChannel(String channelId) {
-		return DYNAMODB_MAPPER.load(ChannelObjectMapper.class, channelId);
+	public Channel getChannel(String channelId) {
+		ChannelObjectMapper mapper =  DYNAMODB_MAPPER.load(ChannelObjectMapper.class, channelId);
+		return new Channel(mapper);
 	}
 
 	@Override
@@ -98,12 +101,17 @@ public class ChannelOrchestrator implements IChannelOrchestrator {
 	}
 
 	@Override
-	public List<ChannelObjectMapper> getChannels(String subscriberid) {
+	public List<Channel> getChannels(String subscriberid) {
+		List<Channel> channelList = new ArrayList<Channel>();
 		DynamoDBScanExpression scanExpression = new DynamoDBScanExpression();
 		Map<String, Condition> filter = new HashMap<String, Condition>();
 		filter.put("userId", new Condition().withComparisonOperator(ComparisonOperator.NOT_NULL));
 		scanExpression.setScanFilter(filter);
-		return DYNAMODB_MAPPER.scan(ChannelObjectMapper.class, scanExpression);
+		List<ChannelObjectMapper> channelMapperList = DYNAMODB_MAPPER.scan(ChannelObjectMapper.class, scanExpression);
+		for (ChannelObjectMapper mapper : channelMapperList) {
+			channelList.add(new Channel(mapper));
+		}
+		return channelList;
 	}
 
 	@Override

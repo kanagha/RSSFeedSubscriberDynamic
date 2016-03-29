@@ -2,6 +2,7 @@ package rss.feeds.subscriber;
 
 import static com.rss.common.aws.AWSDetails.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,16 +29,22 @@ public class SubscriberOrchestrator implements ISubscriberOrchestrator {
 	}
 
 	@Override
-	public SubscriberObjectMapper getSubscriber(String subscriberId) {
-		return DYNAMODB_MAPPER.load(SubscriberObjectMapper.class, subscriberId);
+	public Subscriber getSubscriber(String subscriberId) {
+		SubscriberObjectMapper mapper = DYNAMODB_MAPPER.load(SubscriberObjectMapper.class, subscriberId);
+		return new Subscriber(mapper);
 	}
 
 	@Override
-	public List<SubscriberObjectMapper> getSubscribers() {
+	public List<Subscriber> getSubscribers() {
+		List<Subscriber> subscriberList = new ArrayList<Subscriber>();
 		DynamoDBScanExpression scanExpression = new DynamoDBScanExpression();
 		Map<String, Condition> filter = new HashMap<String, Condition>();
 		filter.put("id", new Condition().withComparisonOperator(ComparisonOperator.NOT_NULL));
 		scanExpression.setScanFilter(filter);
-		return DYNAMODB_MAPPER.scan(SubscriberObjectMapper.class, scanExpression);
+		List<SubscriberObjectMapper>subscriberMapperList = DYNAMODB_MAPPER.scan(SubscriberObjectMapper.class, scanExpression);
+		for (SubscriberObjectMapper mapper : subscriberMapperList) {
+			subscriberList.add(new Subscriber(mapper));
+		}
+		return subscriberList;
 	}
 }

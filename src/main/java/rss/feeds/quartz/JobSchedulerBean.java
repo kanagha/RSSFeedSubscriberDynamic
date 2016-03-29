@@ -32,10 +32,12 @@ public class JobSchedulerBean {
     // where he can enter how long he wants to receive the feeds
     private static final int TOTAL_COUNT=100;
     private static final int DEFAULT_JOB_INTERVAL = 20;
-	
+    private static final String JOB_PREFIX = "job";
+    private static final String TRIGGER_PREFIX = "trigger";
+
 	@PostConstruct
 	public void startScheduler() throws SchedulerException {
-		System.out.println("Started scheduler");
+		System.out.println("Starting scheduler now!");
 		sf = new StdSchedulerFactory();
 	    sched = sf.getScheduler();
 	}
@@ -43,30 +45,23 @@ public class JobSchedulerBean {
 	@PreDestroy
 	public void stopScheduler() throws SchedulerException {
 		sched.shutdown(true);
-	}
-	
-	public void initIt() throws Exception {
-		System.out.println("Init method after properties are set : ");
-    }
-		
-	public void cleanUp() throws Exception {
-	  System.out.println("Spring Container is destroy!");
-	}
-	
+		System.out.println("Stopped scheduler now!");
+	}	
+
 	public void scheduleJob(String channelId) throws SchedulerException {
 		scheduleJob(channelId, DEFAULT_JOB_INTERVAL);
 	}
 	
 	public void scheduleJob(String channelId, int scheduleIntervalInMinutes) throws SchedulerException {
 		// It will check the database, if already a job scheduler is kicked off
-		// for the channelId, then another one is not kicked off
+		// for the channelId, then another job is not kicked off
 		ChannelObjectMapper channel = DYNAMODB_MAPPER.load(ChannelObjectMapper.class, channelId);
 		if (channel == null) {
 			System.out.println("Invalid channelId");
 			return;
 		}
-		String jobName = "job" + channelId;
-		String triggerName = "trigger" + channelId;
+		String jobName = JOB_PREFIX + channelId;
+		String triggerName = TRIGGER_PREFIX + channelId;
 	    JobDetail job = newJob(RSSFeedsQueueJob.class).withIdentity(jobName, jobName + "group1").build();
 
 	    SimpleTrigger trigger = newTrigger().withIdentity(triggerName, jobName + "group1").startAt(new Date())
@@ -79,5 +74,11 @@ public class JobSchedulerBean {
 	    Date scheduleTime1 = sched.scheduleJob(job, trigger);
 	    System.out.println(job.getKey() + " will run at: " + scheduleTime1 + " and repeat: " + trigger.getRepeatCount()
 	             + " times, every " + trigger.getRepeatInterval() / 1000 + " seconds");		
+	}
+
+	boolean isJobAlreadyScheduled(String channelId) {
+		//TODO: Read database and check if a job is already scheduled for channel.
+		// If so, stop the job and restart another one
+		return false;
 	}
 }
