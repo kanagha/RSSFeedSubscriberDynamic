@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,26 +15,22 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.rss.common.Article;
 
-import rss.feeds.stomp.SubscriptionMessage;
 import rss.feeds.subscriber.Channel;
 import rss.feeds.subscriber.IChannelOrchestrator;
 import rss.feeds.subscriber.ISubscriberOrchestrator;
-import rss.feeds.subscriber.IWebsocketEndPointConfigOrchestrator;
 import rss.feeds.subscriber.Subscriber;
 import rss.feeds.subscriber.dataprovider.ChannelObjectMapper;
-import rss.feeds.subscriber.dataprovider.SubscriberObjectMapper;
 
 @Configuration
 @Component
-@RestController("rssfeed")
+@RestController
+
 public class RSSFeedService {
     
 	@Autowired
     IChannelOrchestrator mChannelOrchestrator;
 	@Autowired
     ISubscriberOrchestrator mSubscriberOrchestrator;
-	@Autowired
-	IWebsocketEndPointConfigOrchestrator mWebsocketEndPointConfigOrchestrator;
 
     @RequestMapping(value="/createSubscriber/{username}/{emailAddress}", 
     		method = RequestMethod.POST, 
@@ -89,18 +84,5 @@ public class RSSFeedService {
     		produces = "application/json")
     public List<Article> getLatestFeeds(@PathVariable("channelid") String channelid) {
     	return mChannelOrchestrator.fetchFeeds(channelid);    	
-    }    
-
-    /**
-     * This will subscribe the user to the latest feeds for the given channelId
-     * And a job scheduler will be kicked off
-     * @param message
-     */
-    @MessageMapping("/getfeeds")
-    // message will contain the channelId
-    public void subscribeToFeeds(SubscriptionMessage message) throws Exception {
-		String stompEndPoint = "/topic/getfeeds/" + message.getChannelId();
-
-		mWebsocketEndPointConfigOrchestrator.addEndpoint(message.getChannelId(), stompEndPoint);
     }
 }
