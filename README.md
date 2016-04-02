@@ -1,5 +1,8 @@
 This is one of the projects of RSSFeedsProject which enables clients to register for receiving latest feeds for various groups of urls at a preconfigured interval.
-Clients register websocket endpoints and latest feeds are published to the endpoint.
+
+Each channel is associated to a specific topic (Ex: News/Sports etc.,) containing a specific set of urls.
+
+Clients connect to a websocket endpoint "/getfeeds" and latest feeds are published to each of the users endpoints depending upon the channels which a user has configured.
 
 RSSFeedSubscriber
 ==================
@@ -25,7 +28,7 @@ Calling webservice endpoints:
 
 2) Create channels for each user /rssfeeds/channel
 
-3) Subscribe to websocketendpoint for a given channel
+3) Subscribe to websocketendpoint /getfeeds 
 
 Work In Progress:
 
@@ -33,11 +36,9 @@ Work In Progress:
 
 TODO:
 
-1) Enabling user to paginate through the feeds by fetching subsequent ranges.
+1) Using caching to optimize fetches.
 
-2) Using caching to optimize fetches.
-
-3) Configure separate job interval schedule for each of the feed url by retrieving the max time (from GET headers) before another GET can be sent again. 
+2) Configure separate job interval schedule for each of the feed url by retrieving the max time (from GET headers) before another GET can be sent again. 
 
 Languages/Technologies Used:
 ============================
