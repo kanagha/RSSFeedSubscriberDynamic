@@ -21,34 +21,43 @@
             stompClient = Stomp.over(socket); 
             stompClient.connect('', '', function(frame) {
                 setConnected(true);
+                
                 console.log('Connected: ' + frame);
-    				// subscribe to 
-    				stompClient.subscribe('/user/queue/messages', function(name) {
-    					//var msg = JSON.parse(name.body);
-    				    var msg = name.body;
-    					showGreeting(msg);
-    				});
+                    // subscribe to 
+                    stompClient.subscribe('/user/queue/messages', function(name) {
+                        //var msg = JSON.parse(name.body).content
+                        var msg = name.body;
+                        showGreeting(msg);
+                    });
+                // Send 'connect message'
+                stompClient.send("/app/getfeeds", {}, JSON.stringify({ 'commandOrMsg': 'connect' }));
             });
+        }
+        
+        function sendMessage(command) {
+            
         }
         
         function disconnect() {
             if (stompClient != null) {
+                // Send 'disconnect message'
+                stompClient.send("/app/getfeeds", {}, JSON.stringify({ 'commandOrMsg': 'disconnect' }));
                 stompClient.disconnect();
             }
             setConnected(false);
             console.log("Disconnected");
         }
-        
+
         function logout() {
             
             console.log("Logged out");
         }
-        
+
         function sendName() {
             var name = document.getElementById('name').value;
             // added newly
             globalName = name;
-            stompClient.send("/app/getfeeds", {}, JSON.stringify({ 'name': name }));
+            stompClient.send("/app/getfeeds", {}, JSON.stringify({ 'commandOrMsg': name }));
         }
         
         function showGreeting(message) {

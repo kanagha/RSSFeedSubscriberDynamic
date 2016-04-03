@@ -6,10 +6,9 @@ package rss.feeds.stomp;
  */
 public class SubscriptionMessage {
 
-    private String channelid;
+    private String commandOrMsg;
     
-    public String getChannelId() {
-        return channelid;
+    public String getCommandOrMsg() {
+        return commandOrMsg;
     }
-
 }

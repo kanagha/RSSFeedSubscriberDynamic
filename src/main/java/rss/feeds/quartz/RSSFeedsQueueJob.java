@@ -20,8 +20,7 @@ import com.amazonaws.services.sqs.model.GetQueueUrlRequest;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.rss.common.RSSFeedQueueRequest;
 import com.rss.common.aws.AWSDetails;
-
-import rss.feeds.subscriber.dataprovider.ChannelObjectMapper;
+import com.rss.common.dataprovider.ChannelObjectMapper;
 
 /**
  * Defines RSS Feed queue job attributes
@@ -33,8 +32,8 @@ import rss.feeds.subscriber.dataprovider.ChannelObjectMapper;
 @Scope("prototype")
 public class RSSFeedsQueueJob implements Job {
 
-    private static Logger _log = LoggerFactory.getLogger(RSSFeedsQueueJob.class);
-    
+    private static Logger logger = LoggerFactory.getLogger(RSSFeedsQueueJob.class);
+
     // parameter specific to this job
     public static final String CHANNEL_ID = "channelId";
     public static final String EXECUTION_COUNT = "count";
@@ -47,7 +46,7 @@ public class RSSFeedsQueueJob implements Job {
      * associated with the job.
      * This sends a message to the SQS queue inorder to
      * fetch latest feeds for the url associated with the channelId
-     * 
+     *
      * @throws JobExecutionException
      *             if there is an exception while executing the job.
      */
@@ -57,32 +56,32 @@ public class RSSFeedsQueueJob implements Job {
         // This job simply prints out its job name and the
         // date and time that it is running
         JobKey jobKey = context.getJobDetail().getKey();
-        
+
         // Grab and print passed parameters
         JobDataMap data = context.getJobDetail().getJobDataMap();
         String channelId = data.getString(CHANNEL_ID);
         int count = data.getInt(EXECUTION_COUNT);
-        _log.info("RSSFeedsQueueJob: " + jobKey + " executing at " + new Date() + "\n" +
-            "  channelId is " + channelId + "\n" + 
+        logger.info("RSSFeedsQueueJob: " + jobKey + " executing at " + new Date() + "\n" +
+            "  channelId is " + channelId + "\n" +
             "  execution count (from job map) is " + count + "\n");
         sendMessage(channelId);
 
-        // increment the count and store it back into the 
+        // increment the count and store it back into the
         // job map so that job state can be properly maintained
         count++;
         data.put(EXECUTION_COUNT, count);
     }
 
     private void sendMessage(String channelId) {
-    	ChannelObjectMapper channel = DYNAMODB_MAPPER.load(ChannelObjectMapper.class, channelId);
-		if (channel != null) {
-			String queueUrl = AWSDetails.SQS.getQueueUrl(new GetQueueUrlRequest(AWSDetails.SQS_ADDJOB_GETFEEDS_QUEUE)).getQueueUrl();
-			RSSFeedQueueRequest request = new RSSFeedQueueRequest();		
-			
-			request.URLlist.addAll(channel.getUrlSet());
-			request.channelId = channelId;
-	        AWSDetails.SQS.sendMessage(new SendMessageRequest(queueUrl, request.serializeToJSON()));
-	        System.out.println("Sending message:"+ request + " channelId :" + channelId);
-		}
+        ChannelObjectMapper channel = DYNAMODB_MAPPER.load(ChannelObjectMapper.class, channelId);
+        if (channel != null) {
+            String queueUrl = AWSDetails.SQS.getQueueUrl(new GetQueueUrlRequest(AWSDetails.SQS_ADDJOB_GETFEEDS_QUEUE)).getQueueUrl();
+            RSSFeedQueueRequest request = new RSSFeedQueueRequest();
+
+            request.URLlist.addAll(channel.getUrlSet());
+            request.channelId = channelId;
+            AWSDetails.SQS.sendMessage(new SendMessageRequest(queueUrl, request.serializeToJSON()));
+            System.out.println("Sending message:"+ request + " channelId :" + channelId);
+        }
     }
 }

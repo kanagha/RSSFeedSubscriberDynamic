@@ -10,14 +10,14 @@ import org.springframework.stereotype.Service;
 
 @SpringBootApplication
 @Configuration
-@ComponentScan(basePackages = {"rss.feeds"}, 
+@ComponentScan(basePackages = {"rss.feeds", "com"},
 excludeFilters = @ComponentScan.Filter(value = Service.class)
 )
 @EnableAutoConfiguration
 @ImportResource("classpath:Beans.xml")
 public class RssFeedsSubscriberApplication {
 
-	public static void main(String[] args) throws Exception {
-		SpringApplication.run(RssFeedsSubscriberApplication.class, args);
-	}
+    public static void main(String[] args) throws Exception {
+        SpringApplication.run(RssFeedsSubscriberApplication.class, args);
+    }
 }

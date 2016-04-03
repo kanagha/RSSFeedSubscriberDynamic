@@ -4,8 +4,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 public enum Topic {
-	SPORTS,
-	MUSIC,
-	TVSHOWS,
-	NEWS
+    SPORTS,
+    MUSIC,
+    TVSHOWS,
+    NEWS
 }
